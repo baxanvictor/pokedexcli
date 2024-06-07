@@ -4,16 +4,19 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"poke_api"
 	"strings"
 )
 
-func startRepl() {
+func startRepl(config *poke_api.Config) {
 	printTerminal()
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		if scanner.Scan() {
-			if err := processScannedText(scanner.Text()); err != nil {
+			if err := processScannedText(scanner.Text(), config); err != nil {
 				continue
+			} else {
+				printTerminal()
 			}
 		}
 	}
@@ -22,7 +25,7 @@ func startRepl() {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*poke_api.Config) error
 }
 
 func cliCommands() map[string]cliCommand {
@@ -37,50 +40,38 @@ func cliCommands() map[string]cliCommand {
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
+		"map": {
+			name:        "map",
+			description: "Load the next Pokemon areas page, if there is one",
+			callback:    commandMap,
+		},
+		"mapB": {
+			name:        "mapB",
+			description: "Load the previous Pokemon areas page, if there is one",
+			callback:    commandMapB,
+		},
 	}
 }
 
-func processScannedText(text string) *emptyInputError {
+func processScannedText(text string, config *poke_api.Config) *emptyInputError {
 	if len(text) == 0 {
 		printTerminal()
 		return &emptyInputError{}
 	}
 	cleanText := cleanedUpInput(text)
 	if command, ok := cliCommands()[cleanText]; ok {
-		if err := command.callback(); err != nil {
+		if err := command.callback(config); err != nil {
 			fmt.Println(err)
 			printTerminal()
 		}
 	} else {
-		printUnknownCommand(cleanText)
-		printTerminal()
+		printUnknownCommand(text)
 	}
 	return nil
 }
 
 func cleanedUpInput(input string) string {
-	trimmed := strings.Trim(input, " ")
-	return strings.ToLower(trimmed)
-}
-
-func commandHelp() error {
-	fmt.Println("Welcome to Pokedex!")
-	fmt.Println("Usage:")
-	fmt.Println()
-
-	for name, command := range cliCommands() {
-		fmt.Printf("%v: %v\n", name, command.description)
-	}
-
-	fmt.Println()
-
-	printTerminal()
-	return nil
-}
-
-func commandExit() error {
-	os.Exit(0)
-	return nil
+	return strings.Trim(input, " ")
 }
 
 func printTerminal() {

@@ -1,5 +1,7 @@
 package main
 
+import "poke_api"
+
 func main() {
-	startRepl()
+	startRepl(&poke_api.Config{})
 }

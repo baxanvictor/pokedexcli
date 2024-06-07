@@ -1,7 +1,11 @@
 package main
 
-import "poke_api"
+import (
+	"internal/pokeapi"
+	"internal/pokecache"
+)
 
 func main() {
-	startRepl(&poke_api.Config{})
+	cache := pokecache.NewCache(nil)
+	startRepl(&pokeapi.Config{}, cache)
 }

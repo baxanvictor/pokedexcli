@@ -1,4 +1,4 @@
-package poke_api
+package pokeapi
 
 import (
 	"encoding/json"
@@ -7,29 +7,30 @@ import (
 	"net/http"
 )
 
-func SendGetRequest[T any](url string, resultContainer *T) *ApiError {
+func SendGetRequest[T any](url string, resultContainer *T) ([]byte, *ApiError) {
 	res, err := http.Get(url)
 	if err != nil {
-		return ApiErrorFromError(err)
+		return nil, ApiErrorFromError(err)
 	}
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
-		return &ApiError{
+		return nil, &ApiError{
 			message: fmt.Sprintf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body),
 		}
 	}
 	if err != nil {
-		return ApiErrorFromError(err)
+		return nil, ApiErrorFromError(err)
 	}
-	err = unmarshalResponseBody(body, resultContainer)
+	err = UnmarshalResponseBody(body, resultContainer)
 	if err != nil {
-		return ApiErrorFromError(err)
+		return nil, ApiErrorFromError(err)
 	}
-	return nil
+
+	return body, nil
 }
 
-func unmarshalResponseBody[T any](body []byte, resultContainer *T) error {
+func UnmarshalResponseBody[T any](body []byte, resultContainer *T) error {
 	return json.Unmarshal(body, &resultContainer)
 }
 

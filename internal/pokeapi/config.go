@@ -1,4 +1,4 @@
-package poke_api
+package pokeapi
 
 type Config struct {
 	Previous *string
@@ -12,4 +12,9 @@ type LocationAreasResponse struct {
 		Name *string
 		Url  *string
 	}
+}
+
+func (c *Config) UpdateFromResponse(response *LocationAreasResponse) {
+	c.Next = response.Next
+	c.Previous = response.Previous
 }

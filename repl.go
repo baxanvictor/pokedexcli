@@ -3,17 +3,18 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"internal/pokeapi"
+	"internal/pokecache"
 	"os"
-	"poke_api"
 	"strings"
 )
 
-func startRepl(config *poke_api.Config) {
+func startRepl(config *pokeapi.Config, cache *pokecache.Cache) {
 	printTerminal()
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		if scanner.Scan() {
-			if err := processScannedText(scanner.Text(), config); err != nil {
+			if err := processScannedText(scanner.Text(), config, cache); err != nil {
 				continue
 			} else {
 				printTerminal()
@@ -25,7 +26,7 @@ func startRepl(config *poke_api.Config) {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*poke_api.Config) error
+	callback    func(*pokeapi.Config, *pokecache.Cache) error
 }
 
 func cliCommands() map[string]cliCommand {
@@ -53,14 +54,14 @@ func cliCommands() map[string]cliCommand {
 	}
 }
 
-func processScannedText(text string, config *poke_api.Config) *emptyInputError {
+func processScannedText(text string, config *pokeapi.Config, cache *pokecache.Cache) *emptyInputError {
 	if len(text) == 0 {
 		printTerminal()
 		return &emptyInputError{}
 	}
 	cleanText := cleanedUpInput(text)
 	if command, ok := cliCommands()[cleanText]; ok {
-		if err := command.callback(config); err != nil {
+		if err := command.callback(config, cache); err != nil {
 			fmt.Println(err)
 			printTerminal()
 		}

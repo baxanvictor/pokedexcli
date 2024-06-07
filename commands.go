@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
+	"internal/pokeapi"
+	"internal/pokecache"
 	"os"
-	"poke_api"
 )
 
-func commandHelp(config *poke_api.Config) error {
+func commandHelp(config *pokeapi.Config, cache *pokecache.Cache) error {
 	fmt.Println("Welcome to Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
@@ -21,35 +22,61 @@ func commandHelp(config *poke_api.Config) error {
 	return nil
 }
 
-func commandExit(config *poke_api.Config) error {
+func commandExit(config *pokeapi.Config, cache *pokecache.Cache) error {
 	os.Exit(0)
 	return nil
 }
 
-func commandMap(config *poke_api.Config) error {
+func commandMap(config *pokeapi.Config, cache *pokecache.Cache) error {
 	url := "https://pokeapi.co/api/v2/location-area"
 	if config.Next != nil {
 		url = *config.Next
 	}
-	return requestLocationAreas(url, config)
+	return requestLocationAreas(url, config, cache)
 }
 
-func commandMapB(config *poke_api.Config) error {
+func commandMapB(config *pokeapi.Config, cache *pokecache.Cache) error {
 	if config.Previous == nil {
 		return errors.New("don't have what to go back to")
 	}
-	return requestLocationAreas(*config.Previous, config)
+	return requestLocationAreas(*config.Previous, config, cache)
 }
 
-func requestLocationAreas(url string, config *poke_api.Config) error {
-	fmt.Printf("Requesting %s...\n", url)
-	response := poke_api.LocationAreasResponse{}
-	err := poke_api.SendGetRequest(url, &response)
-	if err != nil {
-		return err
+func requestLocationAreas(url string, config *pokeapi.Config, cache *pokecache.Cache) error {
+	response := pokeapi.LocationAreasResponse{}
+
+	if cacheHit := tryHitCache(url, cache, &response); !cacheHit {
+		fmt.Printf("Requesting %s...\n", url)
+		body, err := pokeapi.SendGetRequest(url, &response)
+		if err != nil {
+			return err
+		}
+		cache.Add(url, body)
 	}
-	config.Next = response.Next
-	config.Previous = response.Previous
+
+	updateConfigAndPrintResults(config, &response)
+	return nil
+}
+
+func tryHitCache(
+	url string,
+	cache *pokecache.Cache,
+	response *pokeapi.LocationAreasResponse,
+) (cacheHit bool) {
+	if currentData, ok := cache.Get(url); ok {
+		fmt.Printf("Found data in cache %s...\n", url)
+		err := pokeapi.UnmarshalResponseBody(currentData, &response)
+		if err != nil {
+			cache.Remove(url)
+		} else {
+			cacheHit = ok
+		}
+	}
+	return cacheHit
+}
+
+func updateConfigAndPrintResults(config *pokeapi.Config, response *pokeapi.LocationAreasResponse) {
+	config.UpdateFromResponse(response)
 	fmt.Println("Received location areas:")
 	for _, area := range response.Results {
 		if area.Name != nil {
@@ -57,5 +84,4 @@ func requestLocationAreas(url string, config *poke_api.Config) error {
 		}
 	}
 	fmt.Println()
-	return nil
 }

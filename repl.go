@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"internal/pokeapi"
-	"internal/pokecache"
 	"os"
 	"strings"
+
+	"github.com/vbaxan-linkedin/pokedexcli/commands"
+	"github.com/vbaxan-linkedin/pokedexcli/internal/pokeapi"
+	"github.com/vbaxan-linkedin/pokedexcli/internal/pokecache"
 )
 
 func startRepl(config *pokeapi.Config, cache *pokecache.Cache) {
@@ -23,56 +25,32 @@ func startRepl(config *pokeapi.Config, cache *pokecache.Cache) {
 	}
 }
 
-type cliCommand struct {
-	name        string
-	description string
-	callback    func(*pokeapi.Config, *pokecache.Cache) error
-}
-
-func cliCommands() map[string]cliCommand {
-	return map[string]cliCommand{
-		"help": {
-			name:        "help",
-			description: "Displays a help message",
-			callback:    commandHelp,
-		},
-		"exit": {
-			name:        "exit",
-			description: "Exit the Pokedex",
-			callback:    commandExit,
-		},
-		"map": {
-			name:        "map",
-			description: "Load the next Pokemon areas page, if there is one",
-			callback:    commandMap,
-		},
-		"mapB": {
-			name:        "mapB",
-			description: "Load the previous Pokemon areas page, if there is one",
-			callback:    commandMapB,
-		},
-	}
-}
-
 func processScannedText(text string, config *pokeapi.Config, cache *pokecache.Cache) *emptyInputError {
 	if len(text) == 0 {
 		printTerminal()
 		return &emptyInputError{}
 	}
-	cleanText := cleanedUpInput(text)
-	if command, ok := cliCommands()[cleanText]; ok {
-		if err := command.callback(config, cache); err != nil {
+	c, args := cleanedUpInput(text)
+	if command, ok := commands.CliCommands()[*c]; ok {
+		if err := command.Callback(config, cache, args...); err != nil {
 			fmt.Println(err)
-			printTerminal()
 		}
 	} else {
-		printUnknownCommand(text)
+		printUnknownCommand(*c)
 	}
 	return nil
 }
 
-func cleanedUpInput(input string) string {
-	return strings.Trim(input, " ")
+func cleanedUpInput(input string) (command *string, args []string) {
+	fields := strings.Fields(input)
+	switch fieldsLen := len(fields); fieldsLen {
+	case 0:
+		return
+	case 1:
+		return &fields[0], nil
+	default:
+		return &fields[0], fields[1:]
+	}
 }
 
 func printTerminal() {

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"internal/pokeapi"
-	"internal/pokecache"
+	"github.com/vbaxan-linkedin/pokedexcli/internal/pokeapi"
+	"github.com/vbaxan-linkedin/pokedexcli/internal/pokecache"
 )
 
 func main() {

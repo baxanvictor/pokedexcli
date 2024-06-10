@@ -22,7 +22,7 @@ func SendGetRequest[T any](url string, resultContainer *T) ([]byte, *ApiError) {
 	if err != nil {
 		return nil, ApiErrorFromError(err)
 	}
-	err = UnmarshalResponseBody(body, resultContainer)
+	err = UnmarshalResponseBody(&body, resultContainer)
 	if err != nil {
 		return nil, ApiErrorFromError(err)
 	}
@@ -30,8 +30,8 @@ func SendGetRequest[T any](url string, resultContainer *T) ([]byte, *ApiError) {
 	return body, nil
 }
 
-func UnmarshalResponseBody[T any](body []byte, resultContainer *T) error {
-	return json.Unmarshal(body, &resultContainer)
+func UnmarshalResponseBody[T any](body *[]byte, resultContainer *T) error {
+	return json.Unmarshal(*body, &resultContainer)
 }
 
 type ApiError struct {

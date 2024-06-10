@@ -11,13 +11,13 @@ type testCase struct {
 	val []byte
 }
 
-type testFunc = func(cases []testCase, cache *Cache)
+type testFunc = func(cases []testCase, cache *Cache[[]byte])
 
 func TestAdd(t *testing.T) {
-	testCache(func(cases []testCase, cache *Cache) {
+	testCache(func(cases []testCase, cache *Cache[[]byte]) {
 		for i, c := range cases {
 			t.Run(fmt.Sprintf("Test case %v", i), func(t *testing.T) {
-				cache.Add(c.key, c.val)
+				cache.Add(c.key, &c.val)
 				_, ok := cache.Entries[c.key]
 				if !ok {
 					t.Errorf("Expected to find key: %s", c.key)
@@ -30,10 +30,10 @@ func TestAdd(t *testing.T) {
 }
 
 func TestReapLoop(t *testing.T) {
-	testCache(func(cases []testCase, cache *Cache) {
+	testCache(func(cases []testCase, cache *Cache[[]byte]) {
 		const waitTime = time.Millisecond * 10
 		testCase := cases[0]
-		cache.Add(testCase.key, testCase.val)
+		cache.Add(testCase.key, &testCase.val)
 
 		_, ok := cache.Get(testCase.key)
 		if !ok {
@@ -54,11 +54,11 @@ func TestReapLoop(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	testCache(func(cases []testCase, cache *Cache) {
+	testCache(func(cases []testCase, cache *Cache[[]byte]) {
 		for i, c := range cases {
-			cache.Entries[c.key] = cachEntry{
+			cache.Entries[c.key] = cachEntry[[]byte]{
 				createdAt: nil,
-				val:       c.val,
+				val:       &c.val,
 			}
 			t.Run(fmt.Sprintf("Test case %v", i), func(t *testing.T) {
 				_, found := cache.Get(c.key)
@@ -83,7 +83,7 @@ func TestGet(t *testing.T) {
 
 func testCache(tf testFunc) {
 	interval := time.Millisecond * 5
-	cache := NewCache(&interval)
+	cache := NewCache[[]byte](&interval, true)
 	cases := []testCase{
 		{
 			key: "https://example.com",

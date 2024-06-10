@@ -1,29 +1,26 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/vbaxan-linkedin/pokedexcli/internal/pokeapi"
 	"github.com/vbaxan-linkedin/pokedexcli/internal/pokecache"
 )
 
-func commandExplore(config *pokeapi.Config, cache *pokecache.Cache, args ...string) error {
-	switch argsLen := len(args); argsLen {
-	case 0:
-		return errors.New("an area name must be provided with the \"explore\" command")
-	case 1:
-		return requestPokemonsInArea(args[0], cache)
-	default:
-		return errors.New("the \"explore\" command only takes one argument")
-	}
+func commandExplore(config *pokeapi.Config, cache *pokecache.AppCache, args ...string) error {
+	return commandWithArg(
+		"explore",
+		cache,
+		requestPokemonsInArea,
+		&pokeapi.AreaPokemonsResponse{},
+		args...,
+	)
 }
 
-func requestPokemonsInArea(areaName string, cache *pokecache.Cache) error {
+func requestPokemonsInArea(areaName string, cache *pokecache.AppCache, response *pokeapi.AreaPokemonsResponse) error {
 	fmt.Printf("Exploring %s...\n", areaName)
 
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s", areaName)
-	response := pokeapi.AreaPokemonsResponse{}
 
 	if cacheHit := tryHitCache(url, cache, &response); !cacheHit {
 		fmt.Printf("Requesting %s...\n", url)
@@ -31,10 +28,10 @@ func requestPokemonsInArea(areaName string, cache *pokecache.Cache) error {
 		if err != nil {
 			return err
 		}
-		cache.Add(url, body)
+		cache.Cache.Add(url, &body)
 	}
 
-	fmt.Println("Found Pokemon:")
+	fmt.Println("Found Pokemons:")
 	for _, encounter := range response.Pokemon_Encounters {
 		fmt.Println(*encounter.Pokemon.Name)
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/vbaxan-linkedin/pokedexcli/internal/pokecache"
 )
 
-func commandExit(config *pokeapi.Config, cache *pokecache.Cache, args ...string) error {
+func commandExit(config *pokeapi.Config, cache *pokecache.AppCache, args ...string) error {
 	os.Exit(0)
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/vbaxan-linkedin/pokedexcli/internal/pokecache"
 )
 
-func commandMap(config *pokeapi.Config, cache *pokecache.Cache, args ...string) error {
+func commandMap(config *pokeapi.Config, cache *pokecache.AppCache, args ...string) error {
 	url := "https://pokeapi.co/api/v2/location-area"
 	if config.Next != nil {
 		url = *config.Next
@@ -16,14 +16,14 @@ func commandMap(config *pokeapi.Config, cache *pokecache.Cache, args ...string) 
 	return requestLocationAreas(url, config, cache)
 }
 
-func commandMapB(config *pokeapi.Config, cache *pokecache.Cache, args ...string) error {
+func commandMapB(config *pokeapi.Config, cache *pokecache.AppCache, args ...string) error {
 	if config.Previous == nil {
 		return errors.New("don't have what to go back to")
 	}
 	return requestLocationAreas(*config.Previous, config, cache)
 }
 
-func requestLocationAreas(url string, config *pokeapi.Config, cache *pokecache.Cache) error {
+func requestLocationAreas(url string, config *pokeapi.Config, cache *pokecache.AppCache) error {
 	response := pokeapi.LocationAreasResponse{}
 
 	if cacheHit := tryHitCache(url, cache, &response); !cacheHit {
@@ -32,7 +32,7 @@ func requestLocationAreas(url string, config *pokeapi.Config, cache *pokecache.C
 		if err != nil {
 			return err
 		}
-		cache.Add(url, body)
+		cache.Cache.Add(url, &body)
 	}
 
 	updateConfigAndPrintResults(config, &response)

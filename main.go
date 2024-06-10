@@ -6,6 +6,9 @@ import (
 )
 
 func main() {
-	cache := pokecache.NewCache(nil)
-	startRepl(&pokeapi.Config{}, cache)
+	appCache := pokecache.AppCache{
+		Cache:         pokecache.NewCache[[]byte](nil, true),
+		PokemonsCache: pokecache.NewCache[pokecache.Pokemon](nil, false),
+	}
+	startRepl(&pokeapi.Config{}, &appCache)
 }

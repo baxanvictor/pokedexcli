@@ -11,7 +11,7 @@ import (
 	"github.com/vbaxan-linkedin/pokedexcli/internal/pokecache"
 )
 
-func startRepl(config *pokeapi.Config, cache *pokecache.Cache) {
+func startRepl(config *pokeapi.Config, cache *pokecache.AppCache) {
 	printTerminal()
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -25,7 +25,7 @@ func startRepl(config *pokeapi.Config, cache *pokecache.Cache) {
 	}
 }
 
-func processScannedText(text string, config *pokeapi.Config, cache *pokecache.Cache) *emptyInputError {
+func processScannedText(text string, config *pokeapi.Config, cache *pokecache.AppCache) *emptyInputError {
 	if len(text) == 0 {
 		printTerminal()
 		return &emptyInputError{}

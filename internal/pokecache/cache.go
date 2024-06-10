@@ -5,28 +5,33 @@ import (
 	"time"
 )
 
-type Cache struct {
-	Entries map[string]cachEntry
+type AppCache struct {
+	Cache         *Cache[[]byte]
+	PokemonsCache *Cache[Pokemon]
+}
+
+type Cache[T any] struct {
+	Entries map[string]cachEntry[T]
 	mu      *sync.Mutex
 }
 
-type cachEntry struct {
+type cachEntry[T any] struct {
 	createdAt *time.Time
-	val       []byte
+	val       *T
 }
 
-func (c *Cache) Add(key string, val []byte) {
+func (c *Cache[T]) Add(key string, val *T) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	now := time.Now()
-	c.Entries[key] = cachEntry{
+	c.Entries[key] = cachEntry[T]{
 		createdAt: &now,
 		val:       val,
 	}
 }
 
-func (c *Cache) Get(key string) (val []byte, found bool) {
+func (c *Cache[T]) Get(key string) (val *T, found bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -37,23 +42,25 @@ func (c *Cache) Get(key string) (val []byte, found bool) {
 	return val, found
 }
 
-func (c *Cache) Remove(key string) {
+func (c *Cache[T]) Remove(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	delete(c.Entries, key)
 }
 
-func NewCache(duration *time.Duration) *Cache {
-	cache := Cache{
-		Entries: make(map[string]cachEntry),
+func NewCache[T any](duration *time.Duration, reap bool) *Cache[T] {
+	cache := Cache[T]{
+		Entries: make(map[string]cachEntry[T]),
 		mu:      &sync.Mutex{},
 	}
-	go cache.reapLoop(duration)
+	if reap {
+		go cache.reapLoop(duration)
+	}
 	return &cache
 }
 
-func (c *Cache) reapLoop(duration *time.Duration) {
+func (c *Cache[T]) reapLoop(duration *time.Duration) {
 	dur := duration
 	if dur == nil || duration.Seconds() <= 0 {
 		defaultDuration := time.Second * 10
@@ -68,7 +75,7 @@ func (c *Cache) reapLoop(duration *time.Duration) {
 	}
 }
 
-func (c *Cache) removeEntriesOlderThan(duration *time.Duration) {
+func (c *Cache[T]) removeEntriesOlderThan(duration *time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

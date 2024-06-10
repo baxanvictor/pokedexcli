@@ -20,8 +20,8 @@ func commandCatch(config *pokeapi.Config, cache *pokecache.AppCache, args ...str
 		return err
 	}
 
-	if ball := rand.Intn(255); ball >= *response.Base_Experience {
-		cache.PokemonsCache.Add(response.Name, &pokecache.Pokemon{Name: response.Name})
+	if ball := rand.Intn(255); ball >= response.Base_Experience {
+		cache.PokemonsCache.Add(response.Name, response.ToPokemon())
 		fmt.Printf("%s was caught!\n", response.Name)
 	} else {
 		fmt.Printf("%s escaped!\n", response.Name)

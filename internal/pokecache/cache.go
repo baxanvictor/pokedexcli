@@ -5,11 +5,6 @@ import (
 	"time"
 )
 
-type AppCache struct {
-	Cache         *Cache[[]byte]
-	PokemonsCache *Cache[Pokemon]
-}
-
 type Cache[T any] struct {
 	Entries map[string]cachEntry[T]
 	mu      *sync.Mutex

@@ -1,16 +1,16 @@
 package pokeapi
 
 type Config struct {
-	Previous *string
-	Next     *string
+	Previous string
+	Next     string
 }
 
 type LocationAreasResponse struct {
-	Next     *string
-	Previous *string
+	Next     string
+	Previous string
 	Results  []struct {
-		Name *string
-		Url  *string
+		Name string
+		Url  string
 	}
 }
 

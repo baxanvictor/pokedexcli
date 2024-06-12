@@ -83,7 +83,7 @@ func TestGet(t *testing.T) {
 
 func testCache(tf testFunc) {
 	interval := time.Millisecond * 5
-	cache := NewCache[[]byte](&interval, true)
+	cache := NewCache[[]byte](interval, true)
 	cases := []testCase{
 		{
 			key: "https://example.com",

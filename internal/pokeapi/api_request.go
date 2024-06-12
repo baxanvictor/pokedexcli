@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func SendGetRequest[T any](url string, resultContainer *T) ([]byte, *ApiError) {
+func SendGetRequest[T any](url string, resultContainer *T) ([]byte, error) {
 	res, err := http.Get(url)
 	if err != nil {
 		return nil, ApiErrorFromError(err)
@@ -42,7 +42,7 @@ func (ae *ApiError) Error() string {
 	return ae.message
 }
 
-func ApiErrorFromError(err error) *ApiError {
+func ApiErrorFromError(err error) error {
 	apiError := ApiError{
 		message: err.Error(),
 	}

@@ -33,7 +33,7 @@ func requestPokemonsInArea(areaName string, cache *pokecache.AppCache, response 
 
 	fmt.Println("Found Pokemons:")
 	for _, encounter := range response.Pokemon_Encounters {
-		fmt.Println(*encounter.Pokemon.Name)
+		fmt.Println(encounter.Pokemon.Name)
 	}
 	fmt.Println()
 	return nil

@@ -7,8 +7,8 @@ import (
 
 func main() {
 	appCache := pokecache.AppCache{
-		Cache:         pokecache.NewCache[[]byte](nil, true),
-		PokemonsCache: pokecache.NewCache[pokecache.Pokemon](nil, false),
+		Cache:         pokecache.NewCache[[]byte](0, true),
+		PokemonsCache: pokecache.NewCache[pokecache.Pokemon](0, false),
 	}
 	startRepl(&pokeapi.Config{}, &appCache)
 }

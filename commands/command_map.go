@@ -10,17 +10,17 @@ import (
 
 func commandMap(config *pokeapi.Config, cache *pokecache.AppCache, args ...string) error {
 	url := "https://pokeapi.co/api/v2/location-area"
-	if config.Next != nil {
-		url = *config.Next
+	if len(config.Next) > 0 {
+		url = config.Next
 	}
 	return requestLocationAreas(url, config, cache)
 }
 
 func commandMapB(config *pokeapi.Config, cache *pokecache.AppCache, args ...string) error {
-	if config.Previous == nil {
+	if len(config.Previous) > 0 {
 		return errors.New("don't have what to go back to")
 	}
-	return requestLocationAreas(*config.Previous, config, cache)
+	return requestLocationAreas(config.Previous, config, cache)
 }
 
 func requestLocationAreas(url string, config *pokeapi.Config, cache *pokecache.AppCache) error {
@@ -43,8 +43,8 @@ func updateConfigAndPrintResults(config *pokeapi.Config, response *pokeapi.Locat
 	config.UpdateFromResponse(response)
 	fmt.Println("Received location areas:")
 	for _, area := range response.Results {
-		if area.Name != nil {
-			fmt.Println(*area.Name)
+		if len(area.Name) > 0 {
+			fmt.Println(area.Name)
 		}
 	}
 	fmt.Println()

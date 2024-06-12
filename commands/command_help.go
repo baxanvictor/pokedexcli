@@ -12,8 +12,8 @@ func commandHelp(config *pokeapi.Config, cache *pokecache.AppCache, args ...stri
 	fmt.Println("Usage:")
 	fmt.Println()
 
-	for name, command := range CliCommands() {
-		fmt.Printf("%v: %v\n", name, command.description)
+	for pair := CliCommands().Oldest(); pair != nil; pair = pair.Next() {
+		fmt.Printf("%v: %v\n", pair.Key, pair.Value.(*cliCommand).description)
 	}
 
 	fmt.Println()

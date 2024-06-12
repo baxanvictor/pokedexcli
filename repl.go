@@ -25,31 +25,31 @@ func startRepl(config *pokeapi.Config, cache *pokecache.AppCache) {
 	}
 }
 
-func processScannedText(text string, config *pokeapi.Config, cache *pokecache.AppCache) *emptyInputError {
+func processScannedText(text string, config *pokeapi.Config, cache *pokecache.AppCache) error {
 	if len(text) == 0 {
 		printTerminal()
 		return &emptyInputError{}
 	}
 	c, args := cleanedUpInput(text)
-	if command, ok := commands.CliCommands()[*c]; ok {
+	if command, ok := commands.Command(c); ok {
 		if err := command.Callback(config, cache, args...); err != nil {
 			fmt.Println(err)
 		}
 	} else {
-		printUnknownCommand(*c)
+		printUnknownCommand(c)
 	}
 	return nil
 }
 
-func cleanedUpInput(input string) (command *string, args []string) {
+func cleanedUpInput(input string) (command string, args []string) {
 	fields := strings.Fields(input)
 	switch fieldsLen := len(fields); fieldsLen {
 	case 0:
 		return
 	case 1:
-		return &fields[0], nil
+		return fields[0], nil
 	default:
-		return &fields[0], fields[1:]
+		return fields[0], fields[1:]
 	}
 }
 
